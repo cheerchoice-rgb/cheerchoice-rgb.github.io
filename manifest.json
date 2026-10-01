@@ -1,0 +1,19 @@
+{
+  "name": "Vocabulary Notebook",
+  "short_name": "Vocab",
+  "description": "Record and review English words with flashcards and quiz",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme_color": "#2563eb",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Vocab" />
+  <meta name="description" content="Personal vocabulary notebook with flashcards and quiz" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <title>Vocabulary Notebook</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #e5e7eb;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 16px;
+      max-width: 720px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-top: 8px;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .stats strong { color: var(--primary); }
+
+    /* Form card */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      margin-bottom: 14px;
+      transition: border-color 0.15s;
+      background: #fff;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    textarea { resize: vertical; min-height: 70px; }
+
+    .word-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      align-items: stretch;
+    }
+    .word-row input {
+      margin-bottom: 0;
+      flex: 1;
+    }
+    .btn-lookup {
+      background: #0f766e;
+      color: #fff;
+      white-space: nowrap;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+    .btn-lookup:hover { background: #0d9488; }
+    .btn-lookup:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .lookup-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: -8px;
+      margin-bottom: 14px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      flex: 1;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: #e5e7eb; }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      padding: 6px 10px;
+      font-size: 0.85rem;
+    }
+    .btn-danger:hover { background: #fef2f2; }
+
+    .btn-edit {
+      background: transparent;
+      color: var(--primary);
+      padding: 6px 10px;
+      font-size: 0.85rem;
+    }
+    .btn-edit:hover { background: #eff6ff; }
+
+    .btn-known {
+      background: transparent;
+      color: #0f766e;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+    }
+    .btn-known:hover { background: #f0fdfa; }
+    .btn-known.is-known {
+      color: #b45309;
+    }
+    .btn-known.is-known:hover { background: #fffbeb; }
+
+    .entry.known {
+      border-left-color: #16a34a;
+      opacity: 0.82;
+    }
+    .badge-known {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #166534;
+      background: #dcfce7;
+      padding: 2px 7px;
+      border-radius: 999px;
+      vertical-align: middle;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .filter-row button {
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .filter-row button.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Search */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .search-wrap input {
+      padding-left: 40px;
+      margin-bottom: 0;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    /* Entries */
+    .entry {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--primary);
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .entry-word {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-word;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-speak {
+      background: transparent;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .btn-speak:hover { background: #eff6ff; }
+    .btn-speak:active { transform: scale(0.92); }
+
+    .entry-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .entry-def {
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      white-space: pre-wrap;
+    }
+
+    .entry-chinese {
+      font-size: 0.95rem;
+      color: #0f766e;
+      margin-bottom: 6px;
+      white-space: pre-wrap;
+      background: #f0fdfa;
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+
+    .entry-example {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 6px;
+      padding-left: 10px;
+      border-left: 2px solid var(--border);
+    }
+
+    .entry-notes {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .entry-meta {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+
+    .empty svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1f2937;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Export bar */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar button {
+      font-size: 0.85rem;
+      padding: 8px 14px;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 12px; }
+      header h1 { font-size: 1.5rem; }
+      .entry-word { font-size: 1.1rem; }
+    }
+
+    /* ========== Flashcard Mode ========== */
+    #mainView.hidden, #flashView.hidden { display: none !important; }
+
+    #flashView {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 8px;
+    }
+    #flashView.active {
+      display: flex;
+    }
+
+    .flash-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .flash-header h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    .flash-progress {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .flashcard-container {
+      width: 100%;
+      max-width: 400px;
+      perspective: 1000px;
+      margin-bottom: 20px;
+    }
+
+    .flashcard {
+      width: 100%;
+      height: 280px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease;
+      cursor: pointer;
+    }
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      text-align: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .flashcard-front {
+      background: linear-gradient(145deg, #ffffff, #f0f7ff);
+    }
+    .flashcard-front .flash-word {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      word-break: break-word;
+      line-height: 1.3;
+    }
+    .flashcard-front .flash-speak-wrap {
+      margin-top: 12px;
+    }
+    .flashcard-front .btn-speak-lg {
+      font-size: 1.6rem;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .flashcard-front .btn-speak-lg:hover { background: #dbeafe; }
+    .flashcard-front .flash-hint {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .flashcard-back {
+      transform: rotateY(180deg);
+      background: linear-gradient(145deg, #f0fdfa, #ffffff);
+      justify-content: flex-start;
+      overflow-y: auto;
+    }
+    .flashcard-back .flash-chinese {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0f766e;
+      margin-bottom: 12px;
+      white-space: pre-wrap;
+    }
+    .flashcard-back .flash-def {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+      text-align: left;
+      width: 100%;
+    }
+    .flashcard-back .flash-example {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-style: italic;
+      text-align: left;
+      width: 100%;
+      border-left: 3px solid var(--border);
+      padding-left: 10px;
+    }
+    .flashcard-back .flash-notes {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 10px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .flash-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    .flash-controls button {
+      flex: 1 1 auto;
+      min-width: 70px;
+      padding: 12px 14px;
+    }
+    .btn-flash-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-flash-primary:hover { background: var(--primary-hover); }
+    .btn-flash-teal {
+      background: #0f766e;
+      color: #fff;
+    }
+    .btn-flash-teal:hover { background: #0d9488; }
+
+    /* Rating buttons (spaced repetition) */
+    .btn-rate {
+      flex: 1;
+      padding: 12px 8px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-rate.again { background: #dc2626; }
+    .btn-rate.hard  { background: #ea580c; }
+    .btn-rate.good  { background: #16a34a; }
+    .btn-rate.easy  { background: #2563eb; }
+    .btn-rate:active { transform: scale(0.97); }
+
+    /* Quiz mode */
+    #quizView {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 8px;
+    }
+    #quizView.active { display: flex; }
+
+    .quiz-score {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #7c3aed;
+      margin-bottom: 12px;
+    }
+    .quiz-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px 20px;
+      border: 1px solid var(--border);
+    }
+    .quiz-prompt-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .quiz-chinese {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #0f766e;
+      margin-bottom: 8px;
+      white-space: pre-wrap;
+    }
+    .quiz-def {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 20px;
+      white-space: pre-wrap;
+    }
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .quiz-option {
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      font-size: 1.05rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quiz-option:hover:not(:disabled) {
+      border-color: #7c3aed;
+      background: #f5f3ff;
+    }
+    .quiz-option.correct {
+      border-color: #16a34a;
+      background: #f0fdf4;
+      color: #166534;
+    }
+    .quiz-option.wrong {
+      border-color: #dc2626;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+    .quiz-option:disabled { cursor: default; }
+    .quiz-feedback {
+      margin-top: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      min-height: 24px;
+      text-align: center;
+    }
+    .quiz-feedback.ok { color: #16a34a; }
+    .quiz-feedback.bad { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <!-- ========== MAIN VIEW ========== -->
+  <div id="mainView">
+  <header>
+    <h1>Vocabulary Notebook</h1>
+    <p>Record words you look up while learning English</p>
+    <div class="stats">
+      <span>Total: <strong id="totalCount">0</strong></span>
+      <span>Learning: <strong id="learnCount">0</strong></span>
+      <span>Known: <strong id="knownCount">0</strong></span>
+      <span>Showing: <strong id="showCount">0</strong></span>
+    </div>
+  </header>
+
+  <!-- Add / Edit form -->
+  <div class="card">
+    <h2 id="formTitle">Add new word</h2>
+    <form id="vocabForm">
+      <label for="word">Word / Phrase</label>
+      <div class="word-row">
+        <input type="text" id="word" placeholder="e.g. resilient" required autocomplete="off" />
+        <button type="button" class="btn-lookup" id="lookupBtn" title="Fetch meaning from free dictionary">Look up</button>
+      </div>
+      <p class="lookup-hint">Type a word then click <strong>Look up</strong>. Tries several free sources in turn (Free Dictionary, Wiktionary, Datamuse, Youdao, Google Translate, MyMemory) so one outage does not block you.</p>
+
+      <label for="definition">Definition / Meaning (English)</label>
+      <textarea id="definition" placeholder="Write the meaning in your own words or use Look up" required></textarea>
+
+      <label for="chinese">Chinese explanation / 中文解释</label>
+      <textarea id="chinese" placeholder="中文意思或解释（Look up 可自动填入）"></textarea>
+
+      <label for="example">Example sentence (optional)</label>
+      <textarea id="example" placeholder="e.g. She remained resilient despite the challenges."></textarea>
+
+      <label for="notes">Notes (optional)</label>
+      <input type="text" id="notes" placeholder="Pronunciation, synonyms, source, etc." />
+
+      <div class="btn-row">
+        <button type="submit" class="btn-primary" id="submitBtn">Add Entry</button>
+        <button type="button" class="btn-secondary" id="cancelBtn" style="display:none;">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button type="button" class="btn-secondary" id="flashBtn" style="background:#0f766e;color:#fff;">Flashcards</button>
+    <button type="button" class="btn-secondary" id="quizBtn" style="background:#7c3aed;color:#fff;">Quiz</button>
+    <button type="button" class="btn-secondary" id="exportBtn">Export JSON</button>
+    <button type="button" class="btn-secondary" id="exportCsvBtn">Export CSV</button>
+    <button type="button" class="btn-secondary" id="clearAllBtn">Clear All</button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search your words..." />
+  </div>
+  <div class="filter-row">
+    <button type="button" class="active" data-filter="learning" id="filterLearning">Learning</button>
+    <button type="button" data-filter="known" id="filterKnown">Known</button>
+    <button type="button" data-filter="all" id="filterAll">All</button>
+  </div>
+
+  <!-- List -->
+  <div id="entryList"></div>
+  </div><!-- end mainView -->
+
+  <!-- ========== FLASHCARD VIEW ========== -->
+  <div id="flashView">
+    <div class="flash-header">
+      <h2>Flashcards</h2>
+      <span class="flash-progress" id="flashProgress">0 / 0</span>
+    </div>
+
+    <div class="flashcard-container">
+      <div class="flashcard" id="flashcard">
+        <div class="flashcard-face flashcard-front">
+          <div class="flash-word" id="flashWord">—</div>
+          <div class="flash-speak-wrap">
+            <button type="button" class="btn-speak-lg" id="flashSpeakBtn" title="Play pronunciation">🔊</button>
+          </div>
+          <div class="flash-hint">Tap card to flip · 🔊 for sound</div>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div class="flash-chinese" id="flashChinese"></div>
+          <div class="flash-def" id="flashDef"></div>
+          <div class="flash-example" id="flashExample"></div>
+          <div class="flash-notes" id="flashNotes"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flash-controls" id="flashNavControls">
+      <button type="button" class="btn-secondary" id="flashPrev">← Prev</button>
+      <button type="button" class="btn-flash-teal" id="flashFlip">Flip</button>
+      <button type="button" class="btn-secondary" id="flashNext">Next →</button>
+    </div>
+    <div class="flash-controls" id="flashRateControls" style="margin-top:8px;display:none;">
+      <button type="button" class="btn-rate again" data-grade="again">Again</button>
+      <button type="button" class="btn-rate hard" data-grade="hard">Hard</button>
+      <button type="button" class="btn-rate good" data-grade="good">Good</button>
+      <button type="button" class="btn-rate easy" data-grade="easy">Easy</button>
+    </div>
+    <div class="flash-controls" style="margin-top:8px;">
+      <button type="button" class="btn-secondary" id="flashKnowBtn" style="background:#dcfce7;color:#166534;">I know this · 已認識</button>
+      <button type="button" class="btn-secondary" id="flashShuffle">Shuffle</button>
+      <button type="button" class="btn-flash-primary" id="flashExit">Exit</button>
+    </div>
+  </div>
+
+  <!-- ========== QUIZ VIEW ========== -->
+  <div id="quizView">
+    <div class="flash-header">
+      <h2>Quiz</h2>
+      <span class="flash-progress" id="quizProgress">0 / 0</span>
+    </div>
+    <div class="quiz-score" id="quizScore">Score: 0</div>
+    <div class="quiz-card">
+      <div class="quiz-prompt-label">What is the English word?</div>
+      <div class="quiz-chinese" id="quizChinese"></div>
+      <div class="quiz-def" id="quizDef"></div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+    </div>
+    <div class="flash-controls" style="margin-top:16px;">
+      <button type="button" class="btn-flash-teal" id="quizNext" style="display:none;">Next →</button>
+      <button type="button" class="btn-flash-primary" id="quizExit">Exit Quiz</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = 'vocabLog_v1';
+    let entries = [];
+    let editId = null;
+    let currentAudioUrl = ''; // set during Look up, saved with entry
+
+    // Elements
+    const form = document.getElementById('vocabForm');
+    const wordInput = document.getElementById('word');
+    const defInput = document.getElementById('definition');
+    const chineseInput = document.getElementById('chinese');
+    const exampleInput = document.getElementById('example');
+    const notesInput = document.getElementById('notes');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const formTitle = document.getElementById('formTitle');
+    const entryList = document.getElementById('entryList');
+    const searchInput = document.getElementById('searchInput');
+    const totalCount = document.getElementById('totalCount');
+    const showCount = document.getElementById('showCount');
+    const learnCount = document.getElementById('learnCount');
+    const knownCount = document.getElementById('knownCount');
+    let listFilter = 'learning'; // learning | known | all
+
+    function isKnown(e) {
+      return !!(e && e.known);
+    }
+
+    function learningEntries() {
+      return entries.filter(e => !isKnown(e));
+    }
+    const toastEl = document.getElementById('toast');
+    const lookupBtn = document.getElementById('lookupBtn');
+
+    // Load from localStorage
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        entries = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        entries = [];
+      }
+      render();
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 2200);
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function resetForm() {
+      form.reset();
+      editId = null;
+      formTitle.textContent = 'Add new word';
+      submitBtn.textContent = 'Add Entry';
+      cancelBtn.style.display = 'none';
+      wordInput.focus();
+    }
+
+    function render() {
+      const q = searchInput.value.trim().toLowerCase();
+      let filtered = entries;
+
+      if (listFilter === 'learning') {
+        filtered = filtered.filter(e => !isKnown(e));
+      } else if (listFilter === 'known') {
+        filtered = filtered.filter(isKnown);
+      }
+
+      if (q) {
+        filtered = filtered.filter(e =>
+          e.word.toLowerCase().includes(q) ||
+          e.definition.toLowerCase().includes(q) ||
+          (e.chinese && e.chinese.toLowerCase().includes(q)) ||
+          (e.example && e.example.toLowerCase().includes(q)) ||
+          (e.notes && e.notes.toLowerCase().includes(q))
+        );
+      }
+
+      // Newest first
+      filtered = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      const knownN = entries.filter(isKnown).length;
+      totalCount.textContent = entries.length;
+      learnCount.textContent = entries.length - knownN;
+      knownCount.textContent = knownN;
+      showCount.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        const emptyMsg = entries.length === 0
+          ? 'No words yet. Add your first one above!'
+          : listFilter === 'known'
+            ? 'No known words yet. Mark a word as 已認識 when you know it.'
+            : listFilter === 'learning'
+              ? (entries.length && knownN === entries.length
+                  ? 'All words are marked known. Switch to Known or All.'
+                  : 'No matching words found.')
+              : 'No matching words found.';
+        entryList.innerHTML = `
+          <div class="empty">
+            <div style="font-size:2rem;margin-bottom:8px;">📚</div>
+            <p>${emptyMsg}</p>
+          </div>`;
+        return;
+      }
+
+      entryList.innerHTML = filtered.map(e => `
+        <div class="entry${isKnown(e) ? ' known' : ''}" data-id="${e.id}">
+          <div class="entry-header">
+            <div class="entry-word">
+              <span>${escapeHtml(e.word)}</span>
+              ${isKnown(e) ? '<span class="badge-known">已認識</span>' : ''}
+              <button type="button" class="btn-speak" onclick="event.stopPropagation(); speakWord('${escapeHtml(e.word).replace(/'/g, "\\'")}', '${(e.audio || '').replace(/'/g, "\\'")}')" title="Play pronunciation">🔊</button>
+            </div>
+            <div class="entry-actions">
+              <button class="btn-known${isKnown(e) ? ' is-known' : ''}" onclick="toggleKnown('${e.id}')">${isKnown(e) ? 'Still learning' : 'I know this'}</button>
+              <button class="btn-edit" onclick="startEdit('${e.id}')">Edit</button>
+              <button class="btn-danger" onclick="deleteEntry('${e.id}')">Delete</button>
+            </div>
+          </div>
+          <div class="entry-def">${escapeHtml(e.definition)}</div>
+          ${e.chinese ? `<div class="entry-chinese">🇨🇳 ${escapeHtml(e.chinese)}</div>` : ''}
+          ${e.example ? `<div class="entry-example">${escapeHtml(e.example)}</div>` : ''}
+          ${e.notes ? `<div class="entry-notes">📝 ${escapeHtml(e.notes)}</div>` : ''}
+          <div class="entry-meta">
+            <span>${formatDate(e.createdAt)}</span>
+            ${e.updatedAt ? `<span>edited ${formatDate(e.updatedAt)}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Play pronunciation: prefer dictionary audio, fallback to browser TTS
+    window.speakWord = function(word, audioUrl) {
+      if (!word) return;
+      // Stop any ongoing speech
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+      if (audioUrl && audioUrl.startsWith('http')) {
+        const audio = new Audio(audioUrl);
+        audio.play().catch(() => {
+          // fallback to TTS if audio file fails
+          speakWithTTS(word);
+        });
+      } else {
+        speakWithTTS(word);
+      }
+    };
+
+    function speakWithTTS(word) {
+      if (!window.speechSynthesis) {
+        showToast('Speech not supported on this device');
+        return;
+      }
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = 'en-US';
+      u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Form submit
+    form.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const word = wordInput.value.trim();
+      const definition = defInput.value.trim();
+      const chinese = chineseInput.value.trim();
+      const example = exampleInput.value.trim();
+      const notes = notesInput.value.trim();
+
+      if (!word || !definition) return;
+
+      if (editId) {
+        const idx = entries.findIndex(e => e.id === editId);
+        if (idx !== -1) {
+          entries[idx] = {
+            ...entries[idx],
+            word,
+            definition,
+            chinese,
+            example,
+            notes,
+            audio: currentAudioUrl || entries[idx].audio || '',
+            updatedAt: new Date().toISOString()
+          };
+          showToast('Entry updated');
+        }
+      } else {
+        entries.push({
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random(),
+          word,
+          definition,
+          chinese,
+          example,
+          notes,
+          audio: currentAudioUrl || '',
+          createdAt: new Date().toISOString()
+        });
+        showToast('Word added ✓');
+      }
+
+      currentAudioUrl = '';
+      save();
+      resetForm();
+      render();
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      currentAudioUrl = '';
+      resetForm();
+    });
+
+    function withTimeout(promise, ms) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+      ]);
+    }
+
+    async function fetchJson(url, timeoutMs) {
+      const res = await withTimeout(fetch(url), timeoutMs || 8000);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    // ----- English dictionary sources (tried in order until one succeeds) -----
+    async function dictFromDictionaryApiDev(word) {
+      const data = await fetchJson(
+        'https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word.toLowerCase()),
+        8000
+      );
+      if (!Array.isArray(data) || !data[0]) throw new Error('empty');
+      const entry = data[0];
+      const defs = [];
+      let example = '';
+      (entry.meanings || []).forEach(m => {
+        const part = m.partOfSpeech ? '(' + m.partOfSpeech + ') ' : '';
+        (m.definitions || []).forEach(d => {
+          if (d.definition) defs.push(part + d.definition);
+          if (!example && d.example) example = d.example;
+        });
+      });
+      if (!defs.length) throw new Error('no defs');
+      const phonetic = entry.phonetic ||
+        ((entry.phonetics || []).find(p => p.text) || {}).text || '';
+      let audio = '';
+      const withAudio = (entry.phonetics || []).find(p => p.audio);
+      if (withAudio && withAudio.audio) {
+        audio = withAudio.audio.startsWith('http') ? withAudio.audio : ('https:' + withAudio.audio);
+      }
+      return { defs, example, phonetic, audio, source: 'Free Dictionary API' };
+    }
+
+    async function dictFromFreeDictionaryApi(word) {
+      const data = await fetchJson(
+        'https://freedictionaryapi.com/api/v1/en/' + encodeURIComponent(word.toLowerCase()),
+        8000
+      );
+      const entries = data.entries || data.meanings || [];
+      const defs = [];
+      let example = '';
+      let phonetic = '';
+      (Array.isArray(entries) ? entries : []).forEach(ent => {
+        const pos = ent.partOfSpeech ? '(' + ent.partOfSpeech + ') ' : '';
+        (ent.senses || []).forEach(s => {
+          const def = s.definition || (s.glosses && s.glosses[0]) || '';
+          if (def) defs.push(pos + def);
+          if (!example && s.examples && s.examples[0]) example = s.examples[0];
+        });
+        (ent.pronunciations || []).forEach(p => {
+          if (!phonetic && p.text) phonetic = p.text;
+        });
+      });
+      if (!defs.length && data.word && data.definition) {
+        defs.push(data.definition);
+      }
+      if (!defs.length) throw new Error('no defs');
+      return { defs, example, phonetic, audio: '', source: 'FreeDictionaryAPI / Wiktionary' };
+    }
+
+    async function dictFromWiktionary(word) {
+      const data = await fetchJson(
+        'https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(word.toLowerCase()),
+        8000
+      );
+      const en = data.en || data.English;
+      if (!en || !en.length) throw new Error('no en');
+      const defs = [];
+      let example = '';
+      en.forEach(block => {
+        const pos = block.partOfSpeech ? '(' + block.partOfSpeech + ') ' : '';
+        (block.definitions || []).forEach(d => {
+          const raw = (d.definition || '').replace(/<[^>]+>/g, '').trim();
+          if (raw) defs.push(pos + raw);
+          if (!example && d.examples && d.examples[0]) {
+            example = String(d.examples[0]).replace(/<[^>]+>/g, '').trim();
+          }
+        });
+      });
+      if (!defs.length) throw new Error('no defs');
+      return { defs, example, phonetic: '', audio: '', source: 'Wiktionary' };
+    }
+
+    async function dictFromDatamuse(word) {
+      const data = await fetchJson(
+        'https://api.datamuse.com/words?sp=' + encodeURIComponent(word.toLowerCase()) +
+        '&md=d&max=1',
+        8000
+      );
+      if (!data[0] || !data[0].defs || !data[0].defs.length) throw new Error('no defs');
+      const defs = data[0].defs.slice(0, 4).map(line => {
+        const i = line.indexOf('\t');
+        if (i === -1) return line;
+        const pos = line.slice(0, i);
+        const rest = line.slice(i + 1);
+        return (pos ? '(' + pos + ') ' : '') + rest;
+      });
+      return { defs, example: '', phonetic: '', audio: '', source: 'Datamuse' };
+    }
+
+    async function dictFromYoudaoSuggest(word) {
+      const data = await fetchJson(
+        'https://dict.youdao.com/suggest?q=' + encodeURIComponent(word) +
+        '&le=en&num=8&doctype=json',
+        8000
+      );
+      const entries = (data.data && data.data.entries) || [];
+      if (!entries.length) throw new Error('no defs');
+      const exact = entries.filter(e =>
+        (e.entry || '').toLowerCase() === word.toLowerCase()
+      );
+      const use = exact.length ? exact : entries.slice(0, 3);
+      const defs = use
+        .map(e => (e.explain || '').trim())
+        .filter(Boolean);
+      if (!defs.length) throw new Error('no defs');
+      return {
+        defs,
+        example: '',
+        phonetic: '',
+        audio: 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(word) + '&type=2',
+        source: 'Youdao',
+        youdaoExplain: defs.join('；')
+      };
+    }
+
+    async function lookupEnglish(word) {
+      const sources = [
+        dictFromDictionaryApiDev,
+        dictFromFreeDictionaryApi,
+        dictFromWiktionary,
+        dictFromDatamuse,
+        dictFromYoudaoSuggest
+      ];
+      const errors = [];
+      for (const fn of sources) {
+        try {
+          const result = await fn(word);
+          if (result && result.defs && result.defs.length) return result;
+        } catch (err) {
+          errors.push((fn.name || 'src') + ': ' + (err && err.message));
+        }
+      }
+      console.warn('All English dictionaries failed', errors);
+      return null;
+    }
+
+    // ----- Chinese translation / dictionary sources -----
+    async function zhFromYoudaoSuggest(word) {
+      const data = await fetchJson(
+        'https://dict.youdao.com/suggest?q=' + encodeURIComponent(word) +
+        '&le=en&num=5&doctype=json',
+        7000
+      );
+      const entries = (data.data && data.data.entries) || [];
+      const hit = entries.find(e =>
+        (e.entry || '').toLowerCase() === word.toLowerCase()
+      ) || entries[0];
+      if (!hit || !hit.explain) throw new Error('empty');
+      return hit.explain.trim();
+    }
+
+    async function zhFromGoogle(text) {
+      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-TW&dt=t&q=' +
+        encodeURIComponent(text.slice(0, 450));
+      const data = await fetchJson(url, 7000);
+      const parts = (data && data[0]) ? data[0].map(row => row && row[0]).filter(Boolean) : [];
+      const t = parts.join('');
+      if (!t) throw new Error('empty');
+      return t;
+    }
+
+    async function zhFromMyMemory(text) {
+      const url = 'https://api.mymemory.translated.net/get?q=' +
+        encodeURIComponent(text.slice(0, 450)) + '&langpair=en|zh-TW';
+      const data = await fetchJson(url, 7000);
+      if (data.responseStatus === 200 && data.responseData && data.responseData.translatedText) {
+        const t = data.responseData.translatedText;
+        if (t.includes('MYMEMORY WARNING') || t.includes('YOU USED ALL AVAILABLE')) {
+          throw new Error('quota');
+        }
+        return t;
+      }
+      throw new Error('empty');
+    }
+
+    async function zhFromLingva(text) {
+      const data = await fetchJson(
+        'https://lingva.ml/api/v1/en/zh/' + encodeURIComponent(text.slice(0, 300)),
+        7000
+      );
+      if (!data || !data.translation) throw new Error('empty');
+      return data.translation;
+    }
+
+    async function translateToChinese(text) {
+      if (!text || !text.trim()) return '';
+      const sources = [
+        () => zhFromYoudaoSuggest(text),
+        () => zhFromGoogle(text),
+        () => zhFromMyMemory(text),
+        () => zhFromLingva(text)
+      ];
+      // Youdao suggest is word-oriented; skip it for long definition sentences
+      const start = text.trim().split(/\s+/).length > 4 ? 1 : 0;
+      for (let i = start; i < sources.length; i++) {
+        try {
+          const t = await sources[i]();
+          if (t && t.trim()) return t.trim();
+        } catch (e) { /* try next */ }
+      }
+      return '';
+    }
+
+    // Dictionary look-up (English + Chinese) with multi-source fallback
+    async function lookupWord() {
+      const word = wordInput.value.trim();
+      if (!word) {
+        showToast('Please type a word first');
+        wordInput.focus();
+        return;
+      }
+
+      lookupBtn.disabled = true;
+      lookupBtn.textContent = 'Looking…';
+      currentAudioUrl = '';
+
+      try {
+        const result = await lookupEnglish(word);
+        const defs = result ? result.defs : [];
+
+        if (defs.length > 0) {
+          defInput.value = defs.slice(0, 4).join('\n\n');
+        }
+
+        if (result && result.example && !exampleInput.value.trim()) {
+          exampleInput.value = result.example;
+        }
+
+        if (result && result.phonetic && !notesInput.value.trim()) {
+          notesInput.value = 'Pronunciation: ' + result.phonetic +
+            (result.source ? '  ·  ' + result.source : '');
+        } else if (result && result.source && !notesInput.value.trim()) {
+          notesInput.value = 'Source: ' + result.source;
+        }
+
+        if (result && result.audio) {
+          currentAudioUrl = result.audio;
+        } else {
+          // Youdao US pronunciation as last-resort audio
+          currentAudioUrl = 'https://dict.youdao.com/dictvoice?audio=' +
+            encodeURIComponent(word) + '&type=2';
+        }
+
+        lookupBtn.textContent = 'Translating…';
+        let chineseText = '';
+
+        // Prefer Youdao bilingual gloss when the English hit came from Youdao
+        if (result && result.youdaoExplain) {
+          chineseText = word + ' → ' + result.youdaoExplain;
+        }
+
+        const wordZh = await translateToChinese(word);
+        if (wordZh && !chineseText) {
+          chineseText = word + ' → ' + wordZh;
+        } else if (wordZh && chineseText && !chineseText.includes(wordZh)) {
+          chineseText = word + ' → ' + wordZh + '\n' + chineseText.replace(/^.*→\s*/, '');
+        }
+
+        if (defs.length > 0) {
+          const firstDefZh = await translateToChinese(defs[0].replace(/^\([^)]+\)\s*/, ''));
+          if (firstDefZh) {
+            chineseText += (chineseText ? '\n\n' : '') + firstDefZh;
+          }
+        }
+
+        if (chineseText) {
+          chineseInput.value = chineseText;
+        }
+
+        if (defs.length) {
+          showToast('Loaded from ' + (result.source || 'dictionary') + ' ✓');
+        } else if (chineseText) {
+          showToast('Chinese found; English definition missing');
+        } else {
+          showToast('Word not found in any dictionary');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Network error – check your internet');
+      } finally {
+        lookupBtn.disabled = false;
+        lookupBtn.textContent = 'Look up';
+      }
+    }
+
+    lookupBtn.addEventListener('click', lookupWord);
+
+    // Allow pressing Enter in word field to trigger lookup (when not submitting)
+    wordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        lookupWord();
+      }
+    });
+
+    // Global functions for buttons
+    window.startEdit = function(id) {
+      const e = entries.find(x => x.id === id);
+      if (!e) return;
+      editId = id;
+      wordInput.value = e.word;
+      defInput.value = e.definition;
+      chineseInput.value = e.chinese || '';
+      exampleInput.value = e.example || '';
+      notesInput.value = e.notes || '';
+      currentAudioUrl = e.audio || '';
+      formTitle.textContent = 'Edit word';
+      submitBtn.textContent = 'Save Changes';
+      cancelBtn.style.display = 'inline-block';
+      wordInput.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.deleteEntry = function(id) {
+      if (!confirm('Delete this entry?')) return;
+      entries = entries.filter(e => e.id !== id);
+      save();
+      render();
+      showToast('Deleted');
+      if (editId === id) resetForm();
+    };
+
+    window.toggleKnown = function(id) {
+      const e = entries.find(x => x.id === id);
+      if (!e) return;
+      e.known = !e.known;
+      e.updatedAt = new Date().toISOString();
+      save();
+      render();
+      showToast(e.known ? 'Marked known · 已認識（閃卡不再出現）' : 'Back to learning · 繼續學習');
+    };
+
+    document.querySelectorAll('.filter-row button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        listFilter = btn.dataset.filter;
+        document.querySelectorAll('.filter-row button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+      });
+    });
+
+    // Search
+    searchInput.addEventListener('input', render);
+
+    // Export JSON
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      if (entries.length === 0) {
+        showToast('Nothing to export');
+        return;
+      }
+      const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vocabulary-notebook-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('JSON downloaded');
+    });
+
+    // Export CSV
+    document.getElementById('exportCsvBtn').addEventListener('click', () => {
+      if (entries.length === 0) {
+        showToast('Nothing to export');
+        return;
+      }
+      const headers = ['Word', 'Definition', 'Chinese', 'Example', 'Notes', 'Known', 'Created', 'Updated'];
+      const rows = entries.map(e => [
+        e.word,
+        e.definition,
+        e.chinese || '',
+        e.example || '',
+        e.notes || '',
+        e.known ? 'yes' : 'no',
+        e.createdAt,
+        e.updatedAt || ''
+      ].map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vocabulary-notebook-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('CSV downloaded');
+    });
+
+    // Clear all
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+      if (entries.length === 0) return;
+      if (!confirm(`Delete all ${entries.length} entries? This cannot be undone.`)) return;
+      entries = [];
+      save();
+      resetForm();
+      render();
+      showToast('All cleared');
+    });
+
+    // ========== Flashcard Mode + Spaced Repetition ==========
+    let flashDeck = [];
+    let flashIndex = 0;
+    let isFlipped = false;
+
+    const mainView = document.getElementById('mainView');
+    const flashView = document.getElementById('flashView');
+    const quizView = document.getElementById('quizView');
+    const flashcardEl = document.getElementById('flashcard');
+    const flashWord = document.getElementById('flashWord');
+    const flashChinese = document.getElementById('flashChinese');
+    const flashDef = document.getElementById('flashDef');
+    const flashExample = document.getElementById('flashExample');
+    const flashNotes = document.getElementById('flashNotes');
+    const flashProgress = document.getElementById('flashProgress');
+    const flashNavControls = document.getElementById('flashNavControls');
+    const flashRateControls = document.getElementById('flashRateControls');
+
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function todayStr() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function isDue(e) {
+      if (!e.nextReview) return true; // new card
+      return e.nextReview <= todayStr();
+    }
+
+    // Simple SM-2 style scheduling
+    function scheduleReview(entry, grade) {
+      // grade: again | hard | good | easy
+      let interval = entry.interval || 0;
+      let ease = entry.ease || 2.5;
+      let reps = entry.reps || 0;
+
+      if (grade === 'again') {
+        interval = 0;
+        reps = 0;
+        ease = Math.max(1.3, ease - 0.2);
+      } else if (grade === 'hard') {
+        interval = Math.max(1, Math.round(interval * 1.2));
+        ease = Math.max(1.3, ease - 0.15);
+        reps += 1;
+      } else if (grade === 'good') {
+        if (reps === 0) interval = 1;
+        else if (reps === 1) interval = 3;
+        else interval = Math.round(interval * ease);
+        reps += 1;
+      } else if (grade === 'easy') {
+        if (reps === 0) interval = 3;
+        else interval = Math.round(interval * ease * 1.3);
+        ease = Math.min(3.0, ease + 0.15);
+        reps += 1;
+      }
+
+      const next = new Date();
+      next.setDate(next.getDate() + Math.max(0, interval));
+
+      entry.interval = interval;
+      entry.ease = Math.round(ease * 100) / 100;
+      entry.reps = reps;
+      entry.nextReview = next.toISOString().slice(0, 10);
+      entry.updatedAt = new Date().toISOString();
+    }
+
+    function showFlashCard() {
+      if (flashDeck.length === 0) return;
+      const e = flashDeck[flashIndex];
+      flashWord.textContent = e.word || '—';
+      flashChinese.textContent = e.chinese || '';
+      flashDef.textContent = e.definition || '';
+      flashExample.textContent = e.example ? '“' + e.example + '”' : '';
+      flashNotes.textContent = e.notes || '';
+      const dueCount = flashDeck.filter(isDue).length;
+      flashProgress.textContent = (flashIndex + 1) + ' / ' + flashDeck.length +
+        (dueCount ? '  ·  Due: ' + dueCount : '');
+      isFlipped = false;
+      flashcardEl.classList.remove('flipped');
+      flashNavControls.style.display = 'flex';
+      flashRateControls.style.display = 'none';
+      // Store current for speak button
+      flashcardEl.dataset.word = e.word || '';
+      flashcardEl.dataset.audio = e.audio || '';
+    }
+
+    function buildFlashDeck() {
+      const pool = learningEntries();
+      const due = pool.filter(isDue);
+      const later = pool.filter(e => !isDue(e));
+      return [...shuffleArray(due), ...shuffleArray(later)];
+    }
+
+    function enterFlashMode() {
+      if (entries.length === 0) {
+        showToast('Add some words first');
+        return;
+      }
+      flashDeck = buildFlashDeck();
+      if (flashDeck.length === 0) {
+        showToast('No learning words left — all marked 已認識');
+        return;
+      }
+      flashIndex = 0;
+      mainView.classList.add('hidden');
+      quizView.classList.remove('active');
+      flashView.classList.add('active');
+      showFlashCard();
+    }
+
+    function markCurrentFlashKnown() {
+      if (flashDeck.length === 0) return;
+      const e = flashDeck[flashIndex];
+      const real = entries.find(x => x.id === e.id);
+      if (real) {
+        real.known = true;
+        real.updatedAt = new Date().toISOString();
+        save();
+      }
+      flashDeck.splice(flashIndex, 1);
+      showToast('已認識 — removed from flashcards');
+      if (flashDeck.length === 0) {
+        showToast('All remaining cards marked known');
+        exitFlashMode();
+        render();
+        return;
+      }
+      if (flashIndex >= flashDeck.length) flashIndex = 0;
+      showFlashCard();
+    }
+
+    function exitFlashMode() {
+      flashView.classList.remove('active');
+      mainView.classList.remove('hidden');
+      render();
+    }
+
+    function flipCard() {
+      isFlipped = !isFlipped;
+      flashcardEl.classList.toggle('flipped', isFlipped);
+      if (isFlipped) {
+        flashNavControls.style.display = 'none';
+        flashRateControls.style.display = 'flex';
+      } else {
+        flashNavControls.style.display = 'flex';
+        flashRateControls.style.display = 'none';
+      }
+    }
+
+    function rateCard(grade) {
+      if (flashDeck.length === 0) return;
+      const e = flashDeck[flashIndex];
+      // Update the real entry in entries array
+      const real = entries.find(x => x.id === e.id);
+      if (real) {
+        scheduleReview(real, grade);
+        // Keep deck in sync
+        Object.assign(e, real);
+        save();
+      }
+      // Move to next card
+      if (flashIndex < flashDeck.length - 1) {
+        flashIndex += 1;
+      } else {
+        // Rebuild deck prioritizing remaining due
+        const remaining = flashDeck.slice(0, flashIndex + 1).concat(flashDeck.slice(flashIndex + 1));
+        // Simple: just go to start of remaining due or reshuffle lightly
+        flashIndex = 0;
+        flashDeck = shuffleArray(learningEntries().filter(isDue));
+        if (flashDeck.length === 0) {
+          showToast('All caught up for today! 🎉');
+          exitFlashMode();
+          return;
+        }
+      }
+      showFlashCard();
+      showToast(grade.charAt(0).toUpperCase() + grade.slice(1));
+    }
+
+    function nextCard() {
+      if (flashDeck.length === 0) return;
+      flashIndex = (flashIndex + 1) % flashDeck.length;
+      showFlashCard();
+    }
+
+    function prevCard() {
+      if (flashDeck.length === 0) return;
+      flashIndex = (flashIndex - 1 + flashDeck.length) % flashDeck.length;
+      showFlashCard();
+    }
+
+    function reshuffle() {
+      flashDeck = buildFlashDeck();
+      if (flashDeck.length === 0) {
+        showToast('No learning words left');
+        exitFlashMode();
+        return;
+      }
+      flashIndex = 0;
+      showFlashCard();
+      showToast('Shuffled ✓');
+    }
+
+    document.getElementById('flashBtn').addEventListener('click', enterFlashMode);
+    document.getElementById('flashKnowBtn').addEventListener('click', markCurrentFlashKnown);
+    document.getElementById('flashExit').addEventListener('click', exitFlashMode);
+    document.getElementById('flashFlip').addEventListener('click', flipCard);
+    document.getElementById('flashNext').addEventListener('click', nextCard);
+    document.getElementById('flashPrev').addEventListener('click', prevCard);
+    document.getElementById('flashShuffle').addEventListener('click', reshuffle);
+    flashcardEl.addEventListener('click', (e) => {
+      // Don't flip if user clicked the speaker
+      if (e.target.closest('#flashSpeakBtn')) return;
+      flipCard();
+    });
+    document.getElementById('flashSpeakBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      speakWord(flashcardEl.dataset.word || '', flashcardEl.dataset.audio || '');
+    });
+
+    document.querySelectorAll('.btn-rate').forEach(btn => {
+      btn.addEventListener('click', () => rateCard(btn.dataset.grade));
+    });
+
+    // ========== Quiz Mode ==========
+    let quizDeck = [];
+    let quizIndex = 0;
+    let quizScore = 0;
+    let quizAnswered = false;
+
+    const quizChinese = document.getElementById('quizChinese');
+    const quizDef = document.getElementById('quizDef');
+    const quizOptions = document.getElementById('quizOptions');
+    const quizFeedback = document.getElementById('quizFeedback');
+    const quizProgress = document.getElementById('quizProgress');
+    const quizScoreEl = document.getElementById('quizScore');
+    const quizNextBtn = document.getElementById('quizNext');
+
+    function enterQuizMode() {
+      const pool = learningEntries();
+      if (pool.length < 2) {
+        showToast('Need at least 2 learning words for quiz');
+        return;
+      }
+      quizDeck = shuffleArray(pool);
+      quizIndex = 0;
+      quizScore = 0;
+      quizAnswered = false;
+      mainView.classList.add('hidden');
+      flashView.classList.remove('active');
+      quizView.classList.add('active');
+      showQuizQuestion();
+    }
+
+    function exitQuizMode() {
+      quizView.classList.remove('active');
+      mainView.classList.remove('hidden');
+    }
+
+    // Remove English word from Chinese text so quiz doesn't spoil the answer
+    // e.g. "Prodigy → 神童" becomes "神童"
+    function cleanChineseForQuiz(chinese, word) {
+      if (!chinese) return '';
+      let text = chinese.trim();
+      if (word) {
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp('^' + escaped + '\\s*[→\\->:：]+\\s*', 'i');
+        text = text.replace(re, '');
+      }
+      // Fallback: strip any leading Latin word + arrow
+      text = text.replace(/^[A-Za-z][A-Za-z\s\-']{0,40}\s*[→\->:：]+\s*/, '');
+      return text.trim() || chinese.trim();
+    }
+
+    function showQuizQuestion() {
+      if (quizIndex >= quizDeck.length) {
+        quizChinese.textContent = 'Finished!';
+        quizDef.textContent = '';
+        quizOptions.innerHTML = '';
+        quizFeedback.textContent = '';
+        quizProgress.textContent = quizDeck.length + ' / ' + quizDeck.length;
+        quizScoreEl.textContent = 'Final score: ' + quizScore + ' / ' + quizDeck.length;
+        quizNextBtn.style.display = 'none';
+        return;
+      }
+
+      const correct = quizDeck[quizIndex];
+      // Hide English answer that was stored inside Chinese field
+      quizChinese.textContent = cleanChineseForQuiz(correct.chinese, correct.word) || '(no Chinese yet)';
+      quizDef.textContent = correct.definition || '';
+      quizProgress.textContent = (quizIndex + 1) + ' / ' + quizDeck.length;
+      quizScoreEl.textContent = 'Score: ' + quizScore;
+      quizFeedback.textContent = '';
+      quizFeedback.className = 'quiz-feedback';
+      quizNextBtn.style.display = 'none';
+      quizAnswered = false;
+
+      // Build 4 options
+      let options = [correct];
+      const others = shuffleArray(entries.filter(e => e.id !== correct.id));
+      for (let i = 0; i < others.length && options.length < 4; i++) {
+        options.push(others[i]);
+      }
+      // If fewer than 4 total words, just use what we have
+      options = shuffleArray(options);
+
+      quizOptions.innerHTML = options.map(o =>
+        `<button type="button" class="quiz-option" data-id="${o.id}">${escapeHtml(o.word)}</button>`
+      ).join('');
+
+      quizOptions.querySelectorAll('.quiz-option').forEach(btn => {
+        btn.addEventListener('click', () => selectQuizAnswer(btn, correct.id));
+      });
+    }
+
+    function selectQuizAnswer(btn, correctId) {
+      if (quizAnswered) return;
+      quizAnswered = true;
+      const chosenId = btn.dataset.id;
+      const allBtns = quizOptions.querySelectorAll('.quiz-option');
+      allBtns.forEach(b => {
+        b.disabled = true;
+        if (b.dataset.id === correctId) b.classList.add('correct');
+        else if (b === btn) b.classList.add('wrong');
+      });
+
+      if (chosenId === correctId) {
+        quizScore += 1;
+        quizFeedback.textContent = 'Correct! ✓';
+        quizFeedback.className = 'quiz-feedback ok';
+      } else {
+        quizFeedback.textContent = 'Wrong — answer is highlighted in green';
+        quizFeedback.className = 'quiz-feedback bad';
+      }
+      quizScoreEl.textContent = 'Score: ' + quizScore;
+      quizNextBtn.style.display = 'inline-block';
+    }
+
+    document.getElementById('quizBtn').addEventListener('click', enterQuizMode);
+    document.getElementById('quizExit').addEventListener('click', exitQuizMode);
+    document.getElementById('quizNext').addEventListener('click', () => {
+      quizIndex += 1;
+      showQuizQuestion();
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if (flashView.classList.contains('active')) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          if (!isFlipped) flipCard();
+        } else if (e.key === 'ArrowRight' || e.key === 'n') {
+          if (!isFlipped) nextCard();
+        } else if (e.key === 'ArrowLeft' || e.key === 'p') {
+          if (!isFlipped) prevCard();
+        } else if (e.key === 'Escape') {
+          exitFlashMode();
+        } else if (isFlipped) {
+          if (e.key === '1') rateCard('again');
+          if (e.key === '2') rateCard('hard');
+          if (e.key === '3') rateCard('good');
+          if (e.key === '4') rateCard('easy');
+        }
+      } else if (quizView.classList.contains('active')) {
+        if (e.key === 'Escape') exitQuizMode();
+        if (e.key === 'Enter' || e.key === 'n') {
+          if (quizNextBtn.style.display !== 'none') {
+            quizIndex += 1;
+            showQuizQuestion();
+          }
+        }
+      }
+    });
+
+    // Register PWA service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // Init
+    load();
+    wordInput.focus();
+  </script>
+</body>
+</html>
